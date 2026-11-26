@@ -20,9 +20,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"http://0.0.0.0:8080/\"")
+        }
         release {
+
+            buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
             optimization {
-                enable = true
+                enable = true   //난독화
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }
