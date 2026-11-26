@@ -1,11 +1,12 @@
-name: Android CD
+name: Android CI
 
 on:
+  pull_request:
   push:
-    tags: ["v*"]
+    branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,20 +18,11 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/release.jks
+      - name: Unit test
+        run: ./gradlew testDebugUnitTest
 
-      - name: Build AAB
-        run: ./gradlew bundleRelease
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      - name: Lint
+        run: ./gradlew lintDebug
 
-      - name: Upload to Play Store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.example.erp
-          releaseFiles: app/build/outputs/bundle/release/*.aab
-          track: internal
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
